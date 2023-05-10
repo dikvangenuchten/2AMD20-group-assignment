@@ -24,3 +24,4 @@ We will merge these two databases for our project
 https://www.kaggle.com/datasets/manchunhui/us-election-2020-tweets
 https://www.kaggle.com/code/manchunhui/us-presidential-election-sentiment-analysis
 https://www.kaggle.com/datasets/unanimad/us-election-2020
+https://simplemaps.com/data/us-counties
