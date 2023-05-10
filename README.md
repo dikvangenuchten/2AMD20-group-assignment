@@ -19,3 +19,8 @@ Dataset about the voting in the 2020 elections
 https://www.kaggle.com/datasets/unanimad/us-election-2020?select=president_county.csv
 
 We will merge these two databases for our project
+
+## Other datasets
+https://www.kaggle.com/datasets/manchunhui/us-election-2020-tweets
+https://www.kaggle.com/code/manchunhui/us-presidential-election-sentiment-analysis
+https://www.kaggle.com/datasets/unanimad/us-election-2020
