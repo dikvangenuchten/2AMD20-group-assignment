@@ -37,7 +37,7 @@ def main(name: str, counties: dict):
     result = process_map(
         partial(add_closest_county, all_counties=counties),
         df_tweets.iterrows(),
-        chunksize=1000,
+        chunksize=100,
         total=df_tweets.shape[0]
     )
     print("Processed data")
