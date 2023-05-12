@@ -36,7 +36,7 @@ def main(name: str, counties: dict):
     )
     df_tweets["county"] = pd.Series(result)
     df_tweets.to_csv(
-        "datasets/tweets/hashtag_{name}_with_county.csv",
+        f"datasets/tweets/hashtag_{name}_with_county.csv",
         lineterminator="\n",
     )
 
