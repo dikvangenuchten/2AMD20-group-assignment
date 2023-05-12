@@ -21,9 +21,11 @@ def add_closest_county(row, all_counties):
     )
 
     if dist > 100:
-        print(dist, tweet["country"], tweet["city"])
+        # Most likely not an american tweeting
+        return None
 
     return county
+
 
 def main(name: str, counties: dict):
     print(f"Starting: {name}")
@@ -33,7 +35,9 @@ def main(name: str, counties: dict):
     )
     print("Loaded data")
     result = process_map(
-        partial(add_closest_county, all_counties=counties), df_tweets.iterrows()
+        partial(add_closest_county, all_counties=counties),
+        df_tweets.iterrows(),
+        chunksize=1000,
     )
     print("Processed data")
     df_tweets["county"] = pd.Series(result)
@@ -42,6 +46,7 @@ def main(name: str, counties: dict):
         lineterminator="\n",
     )
     print(f"Saved data: {name}")
+
 
 if __name__ == "__main__":
     df_counties = pd.read_csv("datasets/uscounties/uscounties.csv")
