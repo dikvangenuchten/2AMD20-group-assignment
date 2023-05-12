@@ -25,41 +25,26 @@ def add_closest_county(row, all_counties):
 
     return county
 
+def main(name: str, counties: dict):
+    print(f"Starting: {name}")
+    df_tweets = pd.read_csv(
+        f"datasets/tweets/hashtag_{name}.csv",
+        lineterminator="\n",
+    )
+    result = process_map(
+        partial(add_closest_county, all_counties=counties), df_tweets.iterrows()
+    )
+    df_tweets["county"] = pd.Series(result)
+    df_tweets.to_csv(
+        "datasets/tweets/hashtag_{name}_with_county.csv",
+        lineterminator="\n",
+    )
 
 if __name__ == "__main__":
     df_counties = pd.read_csv("datasets/uscounties/uscounties.csv")
-    df_tweets_donald = pd.read_csv(
-        "datasets/tweets/hashtag_donaldtrump.csv",
-        lineterminator="\n",
-    ).head(100)
-
     county_dict = {
         x.county: (x.lat, x.lng)
         for x in df_counties[["county", "lat", "lng"]].itertuples()
     }
-    
-    print("starting trump_tweets")
-    result = process_map(
-        partial(add_closest_county, all_counties=county_dict), df_tweets_donald.iterrows()
-    )
-    print(result[0])
-    df_tweets_donald["county"] = pd.Series(result)
-
-    df_tweets_donald.to_csv(
-        "datasets/tweets/hashtag_donaldtrump_with_county.csv",
-        lineterminator="\n",
-    )
-    
-    df_tweets_joe = pd.read_csv(
-        "datasets/tweets/hashtag_joebiden.csv",
-        lineterminator="\n",
-    ).head(100)
-
-
-    df_tweets_joe["county"] = df_tweets_joe.apply(
-        partial(add_closest_county, all_counties=county_dict), axis=1
-    )
-    df_tweets_joe.to_csv(
-        "datasets/tweets/hashtag_joebiden_with_county.csv",
-        lineterminator="\n",
-    )
+    main("donaldtrump", county_dict)
+    main("joebiden", county_dict)
