@@ -33,29 +33,28 @@ if __name__ == "__main__":
         lineterminator="\n",
     ).head(100)
 
-    df_tweets_joe = pd.read_csv(
-        "datasets/tweets/hashtag_joebiden.csv",
-        lineterminator="\n",
-    ).head(100)
-
     county_dict = {
         x.county: (x.lat, x.lng)
         for x in df_counties[["county", "lat", "lng"]].itertuples()
     }
     
-    print("starting")
+    print("starting trump_tweets")
     result = process_map(
         partial(add_closest_county, all_counties=county_dict), df_tweets_donald.iterrows()
     )
     print(result[0])
+    df_tweets_donald["county"] = pd.Series(result)
 
-    df_tweets_donald["county"] = df_tweets_donald.progress_apply(
-        partial(add_closest_county, all_counties=county_dict), axis=1
-    )
     df_tweets_donald.to_csv(
         "datasets/tweets/hashtag_donaldtrump_with_county.csv",
         lineterminator="\n",
     )
+    
+    df_tweets_joe = pd.read_csv(
+        "datasets/tweets/hashtag_joebiden.csv",
+        lineterminator="\n",
+    ).head(100)
+
 
     df_tweets_joe["county"] = df_tweets_joe.apply(
         partial(add_closest_county, all_counties=county_dict), axis=1
