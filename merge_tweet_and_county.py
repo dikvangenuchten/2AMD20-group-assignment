@@ -31,14 +31,17 @@ def main(name: str, counties: dict):
         f"datasets/tweets/hashtag_{name}.csv",
         lineterminator="\n",
     )
+    print("Loaded data")
     result = process_map(
         partial(add_closest_county, all_counties=counties), df_tweets.iterrows()
     )
+    print("Processed data")
     df_tweets["county"] = pd.Series(result)
     df_tweets.to_csv(
         f"datasets/tweets/hashtag_{name}_with_county.csv",
         lineterminator="\n",
     )
+    print(f"Saved data: {name}")
 
 if __name__ == "__main__":
     df_counties = pd.read_csv("datasets/uscounties/uscounties.csv")
