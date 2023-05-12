@@ -4,8 +4,8 @@ from geopy.distance import distance as geo_distance
 from tqdm.contrib.concurrent import process_map
 
 
-def add_closest_county(tweet, all_counties):
-    print(tweet)
+def add_closest_county(row, all_counties):
+    tweet = row[1]
     if (
         tweet["lat"] is None
         or tweet["long"] is None
@@ -31,12 +31,12 @@ if __name__ == "__main__":
     df_tweets_donald = pd.read_csv(
         "datasets/tweets/hashtag_donaldtrump.csv",
         lineterminator="\n",
-    )
+    ).head(100)
 
     df_tweets_joe = pd.read_csv(
         "datasets/tweets/hashtag_joebiden.csv",
         lineterminator="\n",
-    )
+    ).head(100)
 
     county_dict = {
         x.county: (x.lat, x.lng)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     
     print("starting")
     result = process_map(
-        lambda row: add_closest_county(row[1], county_dict), df_tweets_donald.iterrows()
+        partial(add_closest_county, all_counties=county_dict), df_tweets_donald.iterrows()
     )
     print(result[0])
 
