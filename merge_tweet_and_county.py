@@ -34,7 +34,7 @@ def find_closest_county(row, county_points: np.ndarray, county_names: list):
 def calculate_distance_vectorized(point: np.ndarray, county_points: np.ndarray) -> int:
     """Calculates the distance on a sphere in kilometers.
 
-    Using the haversine formula.
+    Using the [haversine formula](https://en.wikipedia.org/wiki/Haversine_formula).
     This is an approximation as the world is not a perfect sphere
     """
     radius = 6371  # kilometers
