@@ -24,8 +24,9 @@ def find_closest_county(row, county_points: np.ndarray, county_names: list):
     dist = distances[closest_idx]
     county = county_names[closest_idx]
 
-    if dist > 100:
+    if dist > 1000:
         # Most likely not an american tweeting
+        # print(f"\n{tweet}\n")
         return None
 
     return county
@@ -62,19 +63,28 @@ def main(name: str, counties: pd.DataFrame):
         f"datasets/tweets/hashtag_{name}.csv",
         lineterminator="\n",
     )
+    # Filter out only america
+    print(f"Loaded {len(df_tweets)} tweets.")
+    df_tweets = df_tweets[df_tweets["country"] == "United States of America"]
+    print(f"{len(df_tweets)} are from US teritory.")
     county_names = list(counties["county"])
     county_points = np.asarray(counties[["lat", "lng"]])
-    print("Loaded data")
 
     result = [
         find_closest_county(row, county_points, county_names)
         for row in tqdm.tqdm(
-            df_tweets[["lat", "long"]].iterrows(), total=df_tweets.shape[0]
+            df_tweets.iterrows(),
+            total=df_tweets.shape[0],
+            desc="Adding county to tweets",
         )
     ]
+    df_tweets["county"] = pd.Series(result, index=df_tweets.index)
 
-    print("Processed data")
-    df_tweets["county"] = pd.Series(result)
+    # Remove tweets that do not have a county
+    # (E.g. puerto rico, guam) as they have no vote during general election
+    df_tweets = df_tweets[df_tweets["county"].notnull()]
+    print(f"{len(df_tweets)} are from valid counties.")
+
     df_tweets.to_csv(
         f"datasets/tweets/hashtag_{name}_with_county.csv",
         lineterminator="\n",
