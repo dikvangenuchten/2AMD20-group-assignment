@@ -1,9 +1,9 @@
 ## Data wrangling
 - [Dik] Link tweet to vote percentage based on county or state if not feasible state
-- [ ] Identify state type on scale: full red, partially red, swing, partially blue, full blue
-- [ ] Separate dataset on mentions: only Trump, only Biden, both
+- [Dik] Identify state type on scale: full red, partially red, swing, partially blue, full blue
+- [Kiet] Separate dataset on mentions: only Trump, only Biden, both
 
-- [ ] Sentiment analysis on the tweets (Note language)
+- [Sander] Sentiment analysis on the tweets (Note language)
 - [ ] Make knowledge graph
 
 ## Visualizations
