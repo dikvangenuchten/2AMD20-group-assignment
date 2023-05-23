@@ -91,11 +91,27 @@ def main(name: str, counties: pd.DataFrame):
     )
     print(f"Saved data: {name}")
 
+def apply_func(x):
+    return pd.Series({
+        # "state": x["state"].values[0],
+        # "county": x["county"].values[0],
+        "total_votes": x["total_votes"].sum(),
+        "donald_trump_votes": x[x["candidate"] == "Donald Trump"]["total_votes"].values[0],
+        "joe_biden_votes": x[x["candidate"] == "Joe Biden"]["total_votes"].values[0],
+    })
+
 
 if __name__ == "__main__":
     df_counties = pd.read_csv("datasets/uscounties/uscounties.csv")[
-        ["county", "lat", "lng"]
+        ["state_name", "county_full", "lat", "lng"]
     ]
+    df_counties_multi = df_counties.rename(columns={"state_name": "state", "county_full": "county"}).set_index(["state", "county"])
+    
+    df_election = pd.read_csv("datasets/election_results/president_county_candidate.csv")
+    df_group = df_election.groupby(["state", "county"]).apply(apply_func)
+    
+    election_dataset = list(sorted(df_group.index))
+    county_dataset = list(sorted(df_counties_multi.index))
 
     main("donaldtrump", df_counties)
     main("joebiden", df_counties)

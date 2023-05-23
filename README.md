@@ -7,7 +7,7 @@ Through the analysis of attributes such as social media engagement, tweet freque
 
 The question we formulated is the following:
 
-What are the optimal locations (Counties, states) for candidates to focus on (swing states) regarding social media campaigns w.r.t. things such as social media engagement (tweet frequency of e.g. #trump, #biden), lack of votes per capita, engagement score of political tweets etc. ?"
+What are the optimal locations (Counties, states) for candidates to focus on (swing states) regarding social media campaigns w.r.t. things such as social media engagement (tweet frequency of e.g. #trump, #biden), lack of votes per capita, engagement score of political tweets etc. ?
 
 So given the attributes (within the scope of our project) it will display the most ideal geographical locations. This provides insights on specific targeting when it comes to media campaigns and allows resources to be used more efficiently.
 
