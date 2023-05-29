@@ -37,5 +37,3 @@ if __name__ == "__main__":
 
     df = pd.concat([df_trump, df_biden])
     df = add_president_mention(df)
-
-)
