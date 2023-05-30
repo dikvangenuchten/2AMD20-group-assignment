@@ -83,13 +83,14 @@ def main(name: str, counties: pd.DataFrame):
             desc="Adding county to tweets",
         )
     ]
-    
-    
+
     # Conflict between state from location and state from twitter
     # After looking at some of the conflicts, these are all close to state borders.
-    # Twitter data has more empty values on state, therefor we chose to use our calculated
-    # state instead of the one from twitter
-    df_county = pd.DataFrame.from_records(county, index=df_tweets.index).drop(["lat", "lng"], axis=1)
+    # Twitter data has more empty values on state, therefor we chose to use our
+    # calculated state instead of the one from twitter
+    df_county = pd.DataFrame.from_records(county, index=df_tweets.index).drop(
+        ["lat", "lng"], axis=1
+    )
     df_tweets = df_tweets.drop("state", axis=1)
     df_tweets = df_tweets.join(df_county)
 
@@ -97,6 +98,10 @@ def main(name: str, counties: pd.DataFrame):
     # (E.g. puerto rico, guam) as they have no vote during general election
     df_tweets = df_tweets[df_tweets["county"].notnull()]
     print(f"{len(df_tweets)} are from valid counties.")
+
+    df_tweets = classify_user_voting_preference_based_on_county(
+        df_tweet_county=df_tweets
+    )
 
     df_tweets.to_csv(
         f"datasets/tweets/hashtag_{name}_with_county.csv",
@@ -147,6 +152,21 @@ def add_election_result_to_county(
     )
 
     return df_counties_with_votes
+
+
+def classify_user_voting_preference_based_on_county(
+    df_tweet_county: pd.DataFrame,
+) -> pd.DataFrame:
+    # TODO double check ordering
+    percentage_biden =  df_tweet_county["joe_biden_votes_county"] / df_tweet_county["total_votes_county"]
+    df_tweet_county["voter_preference"] = ""
+    df_tweet_county["voter_preference"][percentage_biden.between(0.00, 0.20, inclusive="left")] = "Full Republican"
+    df_tweet_county["voter_preference"][percentage_biden.between(0.20, 0.45, inclusive="left")] = "Slightly Republican"
+    df_tweet_county["voter_preference"][percentage_biden.between(0.45, 0.55, inclusive="both")] = "Swing State"
+    df_tweet_county["voter_preference"][percentage_biden.between(0.55, 0.80, inclusive="right")] = "Slightly Democratic"
+    df_tweet_county["voter_preference"][percentage_biden.between(0.80, 1.00, inclusive="right")] = "Full Democratic"
+
+    return df_tweet_county
 
 
 if __name__ == "__main__":
