@@ -14,18 +14,18 @@ def main(df: pd.DataFrame):
     pass
 
 
-def split_dataset_by_mention(df_trump: pd.DataFrame, df_biden: pd.DataFrame):
-    df = pd.concat([df_trump, df_biden])
+def add_president_mention(df: pd.DataFrame):
+    df["mentions_only_trump"] = df["tweet"].str.contains("Trump") & ~(
+        df["tweet"].str.contains("Biden")
+    )
+    df["mentions_only_biden"] = df["tweet"].str.contains("Biden") & ~(
+        df["tweet"].str.contains("Trump")
+    )
+    df["mentions_both"] = df["tweet"].str.contains("Biden") & df["tweet"].str.contains(
+        "Trump"
+    )
 
-    df_trump = df[
-        (df["tweet"].str.contains("Trump") & ~(df["tweet"].str.contains("Biden")))
-    ]
-    df_biden = df[
-        (df["tweet"].str.contains("Biden") & ~(df["tweet"].str.contains("Trump")))
-    ]
-    df_both = df[df["tweet"].str.contains("Biden") & df["tweet"].str.contains("Trump")]
-
-    return df_trump, df_biden, df_both
+    return df
 
 
 if __name__ == "__main__":
@@ -33,6 +33,9 @@ if __name__ == "__main__":
         f"datasets/tweets/hashtag_donaldtrump.csv", lineterminator="\n"
     )
     df_biden = pd.read_csv(f"datasets/tweets/hashtag_joebiden.csv", lineterminator="\n")
-    main(df_trump)
+    # main(df_trump)
 
-    df_onlytrump, df_onlybiden, df_both = split_dataset_by_mention(df_trump, df_biden)
+    df = pd.concat([df_trump, df_biden])
+    df = add_president_mention(df)
+
+)
