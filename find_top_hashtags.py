@@ -1,4 +1,5 @@
 import pandas as pd
+from visualizations import plot_map
 
 # import polars as pd
 import collections
@@ -34,8 +35,25 @@ if __name__ == "__main__":
     )
     df_biden = pd.read_csv(f"datasets/tweets/hashtag_joebiden.csv", lineterminator="\n")
     # main(df_trump)
-
+    print(df_trump.columns)
     df = pd.concat([df_trump, df_biden])
     df = add_president_mention(df)
 
-)
+    df["color"] = (
+        df["mentions_only_trump"].astype(int) * 10000
+        + df["mentions_only_biden"].astype(int) * -10000
+    )
+
+    df_usa = df[
+        (df["country"] == "United States of America")
+        & (df["state"] != "Puerto Rico")
+        & (df["state"] != "Guam")
+        & (df["state"] != "Virgin Islands")
+        & (df["state"] != "American Samoa")
+        & (df["state"] != "Northern Mariana Islands")
+        & (df["state"] != "District of Columbia")
+        & (df["state"] != "Alaska")
+        & (df["state"] != "Hawaii")
+    ]
+
+    plot_map(df_usa[:50000], df_usa["color"][:50000])
