@@ -2,15 +2,15 @@ from typing import List
 import pandas as pd
 from rdflib import Graph, URIRef, BNode, Literal, Namespace
 
+
 def create_graph(df: pd.DataFrame):
     graph = Graph()
-    
+
     namespace = Namespace("http://election/")
     tweets_namespace = Namespace("http://election/tweets/")
     topic_namespace = Namespace("http://election/topics/")
     county_namespace = Namespace("http://election/counties/")
 
-    
     topics = {x: topic_namespace[x] for list_ in df["topics"].values for x in list_}
     for name, topic in topics.items():
         graph.add((topic, namespace.name, Literal(name)))
@@ -28,9 +28,10 @@ def create_graph(df: pd.DataFrame):
 
     return graph
 
+
 def get_sentiment_per_topic_for(county_name: str, graph: Graph):
     namespace = Namespace("http://election/")
-    
+
     sentiment_query = f"""
     SELECT ?topic_name (AVG(?sentiment) as ?avg)
     WHERE {{
@@ -44,7 +45,10 @@ def get_sentiment_per_topic_for(county_name: str, graph: Graph):
     """
 
     for topic, sentiment in graph.query(sentiment_query):
-        print(f"County: {county_name} has a sentiment of {float(sentiment):2.2f} on {topic}")
+        print(
+            f"County: {county_name} has a sentiment of {float(sentiment):2.2f} on {topic}"
+        )
+
 
 def get_sentiment_for_topic_per_county(topic_name: str, graph: Graph):
     namespace = Namespace("http://election/")
@@ -62,23 +66,60 @@ def get_sentiment_for_topic_per_county(topic_name: str, graph: Graph):
     """
 
     for county_name, sentiment in graph.query(sentiment_query):
-        print(f"County: {county_name} has a sentiment of {float(sentiment):2.2f} on {topic_name}")
+        print(
+            f"County: {county_name} has a sentiment of {float(sentiment):2.2f} on {topic_name}"
+        )
+
+
+def add_topic_column(df: pd.DataFrame, topics: list[str]):
+    """Adds a column which contains the preselected topics if they are mentioned in the tweet"""
+    topics = [
+        "covid19",
+        "corona",
+        "coronavirus",
+        "black lives matter",
+        "blm",
+        "blacklivesmatter",
+        "cnn",
+        "foxnews",
+        "msnbc",
+        "china",
+        "tax",
+        "taxes",
+        "russia",
+        "healthcare",
+        "obamacare",
+        "fraud",
+        "vetsforscience",
+        "antifa",
+    ]
+    topics = [topic.lower() for topic in topics]
+    df["topics"] = (
+        df["tweet"]
+        .str.lower()
+        .apply(lambda x: list(set(filter(lambda y: y in topics, x.split(" ")))))
+    )
+
 
 def main():
-    df = pd.read_csv("example_data.csv", dtype={
-        "tweet_id":int,
-        "sentiment":int,
-        "topics":str,
-        "county":str,
-        "state":str
-        })
+    df = pd.read_csv(
+        "example_data.csv",
+        dtype={
+            "tweet_id": int,
+            "sentiment": int,
+            "topics": str,
+            "county": str,
+            "state": str,
+        },
+    )
     df["topics"] = df["topics"].str.split(";")
     graph = create_graph(df)
 
     get_sentiment_per_topic_for("Jefferson", graph)
     get_sentiment_per_topic_for("Sparta", graph)
-    
+
     get_sentiment_for_topic_per_county("guns", graph)
+
 
 if __name__ == "__main__":
     main()
