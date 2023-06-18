@@ -10,21 +10,30 @@ def create_graph(df: pd.DataFrame):
     tweets_namespace = Namespace("http://election/tweets/")
     topic_namespace = Namespace("http://election/topics/")
     county_namespace = Namespace("http://election/counties/")
-
-    topics = {x: topic_namespace[x] for list_ in df["topics"].values for x in list_}
+    
+    # TODO merge some topics
+    unique_topics = set()
+    for tweet_topics in df["topics"].values:
+        for topic in tweet_topics:
+            if topic not in unique_topics:
+                unique_topics.add(topic)
+    
+    topics = {x: topic_namespace[x] for x in unique_topics}
     for name, topic in topics.items():
         graph.add((topic, namespace.name, Literal(name)))
 
-    counties = {county: county_namespace[county] for county in df["county"].unique()}
+    counties = {county: county_namespace[county.lower().replace(" ", "_")] for county in df["county"].unique()}
     for name, county in counties.items():
         graph.add((county, namespace.name, Literal(name)))
 
     for _, row in df.iterrows():
         tweet = tweets_namespace[f"{row['tweet_id']}"]
-        graph.add((tweet, namespace.sentiment, Literal(row["sentiment"])))
+        graph.add((tweet, namespace.sentiment, Literal(row["compound"]["compound"])))
         for topic in row["topics"]:
             graph.add((tweet, namespace.isAbout, topics[topic]))
         graph.add((tweet, namespace.origin, counties[row["county"]]))
+        graph.add((tweet, namespace.retweets, Literal(row["retweet_count"])))
+        graph.add((tweet, namespace.likes, Literal(row["likes"])))
 
     return graph
 
@@ -33,7 +42,7 @@ def get_sentiment_per_topic_for(county_name: str, graph: Graph):
     namespace = Namespace("http://election/")
 
     sentiment_query = f"""
-    SELECT ?topic_name (AVG(?sentiment) as ?avg)
+    SELECT ?topic_name (AVG(?sentiment) as ?avg) (COUNT(?tweet) as ?count)
     WHERE {{
         ?tweet <{namespace.isAbout}> ?topic .
         ?tweet <{namespace.sentiment}> ?sentiment .
@@ -43,11 +52,16 @@ def get_sentiment_per_topic_for(county_name: str, graph: Graph):
     }}
     GROUP BY ?topic_name ?county
     """
+    
+    topics = []
+    sentiments = []
+    counts = []
+    for topic, sentiment, count in graph.query(sentiment_query):
+        topics.append(str(topic))
+        sentiments.append(float(sentiment))
+        counts.append(int(count))
 
-    for topic, sentiment in graph.query(sentiment_query):
-        print(
-            f"County: {county_name} has a sentiment of {float(sentiment):2.2f} on {topic}"
-        )
+    return topics, sentiments, counts
 
 
 def get_sentiment_for_topic_per_county(topic_name: str, graph: Graph):
@@ -69,37 +83,6 @@ def get_sentiment_for_topic_per_county(topic_name: str, graph: Graph):
         print(
             f"County: {county_name} has a sentiment of {float(sentiment):2.2f} on {topic_name}"
         )
-
-
-def add_topic_column(df: pd.DataFrame, topics: list[str]):
-    """Adds a column which contains the preselected topics if they are mentioned in the tweet"""
-    topics = [
-        "covid19",
-        "corona",
-        "coronavirus",
-        "black lives matter",
-        "blm",
-        "blacklivesmatter",
-        "cnn",
-        "foxnews",
-        "msnbc",
-        "china",
-        "tax",
-        "taxes",
-        "russia",
-        "healthcare",
-        "obamacare",
-        "fraud",
-        "vetsforscience",
-        "antifa",
-    ]
-    topics = [topic.lower() for topic in topics]
-    df["topics"] = (
-        df["tweet"]
-        .str.lower()
-        .apply(lambda x: list(set(filter(lambda y: y in topics, x.split(" ")))))
-    )
-
 
 def main():
     df = pd.read_csv(

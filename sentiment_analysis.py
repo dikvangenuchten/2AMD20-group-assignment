@@ -1,3 +1,4 @@
+from typing import Union
 import pandas as pd
 
 from langdetect import detect
@@ -41,14 +42,14 @@ def output(vader_dict):
     except:
         return None
 
+def load_data(name: str = "joebiden"):
+    return pd.read_csv(f"datasets/tweets/hashtag_{name}.csv", lineterminator="\n")
 
-def main(name: str = "joebiden"):
+
+def add_sentiment(df: pd.DataFrame) -> pd.DataFrame:
     sid = SentimentIntensityAnalyzer()
-
-    df = pd.read_csv(f"datasets/tweets/hashtag_{name}.csv")
-
     df["language"] = df["tweet"].progress_apply(language)
-    df.to_csv(f"{name}_tweet_with_language.csv")
+    # df.to_csv(f"{name}_tweet_with_language.csv")
 
     # Filter on only English for sentiment analysis, use original dataset for further visualisation
     df_en = df[df["language"] == "en"]
@@ -61,8 +62,13 @@ def main(name: str = "joebiden"):
     print(len(df_en))
 
     df_en["emotion"] = df_en["compound"].progress_apply(output)
+    return df_en
 
+def main(name: Union[str, pd.DataFrame] = "joebiden"):
+    df = load_data(name)
+    df_en = add_sentiment(df)
     df_en.to_csv(f"{name}_english_tweets_with_compound.csv")
+    return df_en
 
 
 if __name__ == "__main__":

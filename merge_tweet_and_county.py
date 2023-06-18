@@ -57,12 +57,7 @@ def calculate_distance_vectorized(point: np.ndarray, county_points: np.ndarray) 
     return radius * c
 
 
-def main(name: str, counties: pd.DataFrame):
-    print(f"Starting: {name}")
-    df_tweets = pd.read_csv(
-        f"datasets/tweets/hashtag_{name}.csv",
-        lineterminator="\n",
-    )
+def main(df_tweets: pd.DataFrame, counties: pd.DataFrame, name: str):
     # Filter out only america
     print(f"Loaded {len(df_tweets)} tweets.")
     df_tweets = df_tweets[df_tweets["country"] == "United States of America"]
@@ -108,6 +103,7 @@ def main(name: str, counties: pd.DataFrame):
         lineterminator="\n",
     )
     print(f"Saved data: {name}")
+    return df_tweets
 
 
 def apply_func(x):
@@ -168,8 +164,7 @@ def classify_user_voting_preference_based_on_county(
 
     return df_tweet_county
 
-
-if __name__ == "__main__":
+def load_df_counties():
     print("Loading county dataset")
     df_counties = pd.read_csv("datasets/uscounties/uscounties.csv")[
         ["state_name", "county_full", "lat", "lng"]
@@ -180,7 +175,14 @@ if __name__ == "__main__":
         "datasets/election_results/president_county_candidate.csv"
     )
 
-    df_counties = add_election_result_to_county(df_counties, df_election)
+    return add_election_result_to_county(df_counties, df_election)
 
-    main("donaldtrump", df_counties)
-    main("joebiden", df_counties)
+def load_data(name: str = "joebiden"):
+    return pd.read_csv(f"datasets/tweets/hashtag_{name}.csv")
+
+if __name__ == "__main__":
+    df_counties = load_df_counties()
+    df_trump = load_data("donaldtrump")
+    main(df_trump, df_counties, "donaldtrump")
+    df_biden = load_data("donaldtrump")
+    main(df_biden, df_counties, "joebiden")
