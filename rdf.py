@@ -84,6 +84,31 @@ def get_sentiment_for_topic_per_county(topic_name: str, graph: Graph):
             f"County: {county_name} has a sentiment of {float(sentiment):2.2f} on {topic_name}"
         )
 
+
+def get_sentiment_per_topic_for_distributed(county_name: str, graph: Graph):
+    namespace = Namespace("http://election/")
+
+    sentiment_query = f"""
+    SELECT ?topic_name ?sentiment
+    WHERE {{
+        ?tweet <{namespace.isAbout}> ?topic .
+        ?tweet <{namespace.sentiment}> ?sentiment .
+        ?tweet <{namespace.origin}> ?county .
+        ?topic <{namespace.name}> ?topic_name .
+        ?county <{namespace.name}> "{county_name}" .
+    }}
+    
+    """
+
+    topics = []
+    sentiments = []
+    counts = []
+    for topic, sentiment in graph.query(sentiment_query):
+        topics.append(str(topic))
+        sentiments.append(float(sentiment))
+
+    return topics, sentiments
+
 def main():
     df = pd.read_csv(
         "example_data.csv",

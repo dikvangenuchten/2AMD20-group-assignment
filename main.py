@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import merge_tweet_and_county
 import sentiment_analysis
@@ -80,21 +81,46 @@ def make_bubble_graph(topic, sentiment, size_data, name: str):
     plt.title(f"Sentiment per topic for {name}")
     plt.legend()
     plt.colorbar()
-    fig.savefig(f"bubble_{name}.png")
+    fig.savefig(f"bubble_{name}.png",dpi=300)
+
+
+def make_violin(topic, sentiment, name: str):
+    data = pd.DataFrame(
+        {'Topic': topic,
+         'Sentiment': sentiment}
+    )
+
+    sns.set(rc={'figure.figsize':(11.7, 11.7)})
+    violin = sns.violinplot(
+        data=data,
+        x='Topic',
+        y='Sentiment',
+        cut=0
+    )
+    violin.set_title(f"Sentiment per topic for {name}")
+    violin.tick_params(axis='x', rotation=45)
+    fig = violin.figure
+    fig.savefig(f"violin_{name}.png",dpi=300)
 
 def main():
     graph = create_graph()
 
     # What is the sentiment of Hudson County
     county = "Hudson County"
-    topic, sentiment, count = rdf.get_sentiment_per_topic_for(county, graph)
+    # topic, sentiment, count = rdf.get_sentiment_per_topic_for(county, graph)
+    #
+    # make_bubble_graph(
+    #     topic,
+    #     sentiment,
+    #     np.asarray(count) ** 1.2,
+    #     county
+    # )
 
-    make_bubble_graph(
+    topic, sentiment = rdf.get_sentiment_per_topic_for_distributed(county, graph)
+    make_violin(
         topic,
         sentiment,
-        np.asarray(count) ** 1.2,
-        county
-    )
+        county)
     pass
    
 

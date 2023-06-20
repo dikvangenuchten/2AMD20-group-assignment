@@ -2,3 +2,4 @@ tqdm
 pandas
 geopy
 lxml
+vaderSentiment

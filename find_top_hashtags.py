@@ -9,8 +9,7 @@ def main(df: pd.DataFrame):
     df["hashtags"] = df["tweet"].str.lower().str.findall(r"#(\w+)")
     # df = df.with_columns(hashtags=df["tweet"].str.to_lowercase().str.extract_all(r"#(\w+)"))
     count_hashtags = collections.Counter(
-        element for list_ in df["hashtags"].values for element in list_
-    ).most_common()
+        element for list_ in df["hashtags"].values for element in list_).most_common()
     print(count_hashtags)
     pass
 
@@ -28,6 +27,14 @@ def add_president_mention(df: pd.DataFrame):
 
     return df
 
+def sentiment_calculator(df: pd.DataFrame):
+    sid = SentimentIntensityAnalyzer()
+    print(df['tweet'])
+    df['scores'] = sid.polarity_scores(df['tweet'])
+    df['compound'] = df['scores']['compound']
+    print(df)
+
+
 
 if __name__ == "__main__":
     df_trump = pd.read_csv(
@@ -43,7 +50,7 @@ if __name__ == "__main__":
         df["mentions_only_trump"].astype(int) * 10000
         + df["mentions_only_biden"].astype(int) * -10000
     )
-
+    sentiment_calculator(df_trump)
     df_usa = df[
         (df["country"] == "United States of America")
         & (df["state"] != "Puerto Rico")
